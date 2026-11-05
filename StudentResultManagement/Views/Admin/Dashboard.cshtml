@@ -1,0 +1,301 @@
+@model StudentResultManagement.Models.AdminDashboardViewModel
+
+@{
+    ViewBag.Title = "Admin Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="page-container">
+
+    <!-- Database Connection Warning if applicable -->
+    @if (ViewBag.DbWarning != null)
+    {
+        <div class="alert alert-warning">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <div>
+                <strong>Notice:</strong> @ViewBag.DbWarning
+                <div style="font-size:12px; margin-top:2px;">Make sure your SQL Server (SQLEXPRESS) service is running.</div>
+            </div>
+        </div>
+    }
+
+    <!-- Welcome & Page Header -->
+    <div class="page-header">
+        <div class="page-title-wrap">
+            <h1>Admin Dashboard</h1>
+            <p class="page-subtitle">
+                Welcome back, <strong>@(Session["AdminUsername"] ?? "Administrator")</strong>. Overview of academic results, students, and performance metrics.
+            </p>
+        </div>
+
+        <div class="page-actions" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            @using (Html.BeginForm("TogglePublishStatus", "Admin", FormMethod.Post, new { style = "display:inline-block; margin:0;" }))
+            {
+                if (Model.IsResultPublished)
+                {
+                    <button type="submit" class="btn btn-sm" style="background:#ecfdf5; border:1px solid #10b981; color:#065f46; font-weight:600; padding:7px 12px; border-radius:6px; cursor:pointer;" title="Click to hide results from students">
+                        <i class="fa-solid fa-circle" style="color:#10b981; font-size:9px; vertical-align:middle; margin-right:4px;"></i> Results: Published
+                    </button>
+                }
+                else
+                {
+                    <button type="submit" class="btn btn-sm" style="background:#fffbeb; border:1px solid #f59e0b; color:#92400e; font-weight:600; padding:7px 12px; border-radius:6px; cursor:pointer;" title="Click to make results visible to students">
+                        <i class="fa-solid fa-circle" style="color:#f59e0b; font-size:9px; vertical-align:middle; margin-right:4px;"></i> Results: Draft (Hidden)
+                    </button>
+                }
+            }
+            <a href="@Url.Action("Create", "Student")" class="btn btn-primary">
+                <i class="fa-solid fa-user-plus"></i>
+                <span>Add Student</span>
+            </a>
+            <a href="@Url.Action("Create", "Result")" class="btn btn-success">
+                <i class="fa-solid fa-plus"></i>
+                <span>Enter Marks</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- 4 Key Stat Cards -->
+    <div class="stats-grid">
+        <!-- Total Students -->
+        <div class="stat-card">
+            <div class="stat-info">
+                <span class="stat-label">Total Students</span>
+                <span class="stat-value">@Model.TotalStudents</span>
+                <span class="stat-subtext">Active enrolled students</span>
+            </div>
+            <div class="stat-icon blue">
+                <i class="fa-solid fa-user-graduate"></i>
+            </div>
+        </div>
+
+        <!-- Total Subjects -->
+        <div class="stat-card">
+            <div class="stat-info">
+                <span class="stat-label">Total Subjects</span>
+                <span class="stat-value">@Model.TotalSubjects</span>
+                <span class="stat-subtext">Active curriculum subjects</span>
+            </div>
+            <div class="stat-icon purple">
+                <i class="fa-solid fa-book-open"></i>
+            </div>
+        </div>
+
+        <!-- Total Results Entered -->
+        <div class="stat-card">
+            <div class="stat-info">
+                <span class="stat-label">Results Recorded</span>
+                <span class="stat-value">@Model.TotalResults</span>
+                <span class="stat-subtext">Avg Score: @Model.AverageScore marks</span>
+            </div>
+            <div class="stat-icon amber">
+                <i class="fa-solid fa-file-invoice"></i>
+            </div>
+        </div>
+
+        <!-- Pass Percentage -->
+        <div class="stat-card">
+            <div class="stat-info">
+                <span class="stat-label">Overall Pass Rate</span>
+                <span class="stat-value">@Model.PassPercentage%</span>
+                <span class="stat-subtext">
+                    <i class="fa-solid fa-check-circle" style="color:var(--success);"></i> @Model.TotalPassed Passed &bull; @Model.TotalFailed Failed
+                </span>
+            </div>
+            <div class="stat-icon green">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions Bar -->
+    <div class="quick-actions-bar">
+        <div class="quick-actions-title">
+            <i class="fa-solid fa-bolt" style="color: var(--primary);"></i>
+            <span>Quick Management Shortcuts</span>
+        </div>
+        <div class="quick-actions-btns">
+            <a href="@Url.Action("Index", "Student")" class="btn btn-sm btn-outline">
+                <i class="fa-solid fa-users"></i> All Students
+            </a>
+            <a href="@Url.Action("Index", "Subject")" class="btn btn-sm btn-outline">
+                <i class="fa-solid fa-book"></i> All Subjects
+            </a>
+            <a href="@Url.Action("Index", "Result")" class="btn btn-sm btn-outline">
+                <i class="fa-solid fa-table-list"></i> All Marks
+            </a>
+            <a href="@Url.Action("StudentResult", "Result")" class="btn btn-sm btn-primary">
+                <i class="fa-solid fa-magnifying-glass"></i> Single Student Result
+            </a>
+        </div>
+    </div>
+
+    <!-- Visual Charts Grid (Chart.js) -->
+    <div class="charts-grid">
+        <!-- Chart 1: Grade Distribution Breakdown (Doughnut) -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-header-left">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span class="chart-title">Grade Distribution</span>
+                </div>
+                <span class="chart-badge">Academic Tiers</span>
+            </div>
+            <div class="chart-body">
+                <canvas id="gradeChart"></canvas>
+            </div>
+        </div>
+
+
+
+        <!-- Chart 2: Subject Performance (Average Marks) -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-header-left">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                    <span class="chart-title">Subject Performance Analysis</span>
+                </div>
+                <span class="chart-badge">Class Average</span>
+            </div>
+            <div class="chart-body">
+                <canvas id="subjectChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Chart.js Scripts -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // 1. Grade Distribution Doughnut Chart
+        var gradeLabels = [@Html.Raw(string.Join(", ", Model.GradeLabels.Select(l => "'" + HttpUtility.JavaScriptStringEncode(l) + "'")))];
+        var gradeData = [@Html.Raw(string.Join(", ", Model.GradeCounts))];
+        var totalResults = @Model.TotalResults;
+
+        var gradeCtx = document.getElementById('gradeChart').getContext('2d');
+
+        if (totalResults === 0) {
+            new Chart(gradeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['No Marks Entered'],
+                    datasets: [{
+                        data: [1],
+                        backgroundColor: ['#e2e8f0'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: { enabled: false }
+                    }
+                }
+            });
+        } else {
+            new Chart(gradeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: gradeLabels,
+                    datasets: [{
+                        data: gradeData,
+                        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444'],
+                        borderColor: '#ffffff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 10,
+                                boxWidth: 12,
+                                font: { family: 'Inter', size: 11, weight: '500' }
+                            }
+                        },
+                        tooltip: {
+                            enabled: true,
+                            callbacks: {
+                                label: function (context) {
+                                    return ' ' + context.label + ': ' + context.parsed + ' results';
+                                }
+                            }
+                        }
+                    },
+                    cutout: '62%'
+                }
+            });
+        }
+
+
+        // 2. Subject-wise Average Marks Bar Chart
+        var subjectLabels = [@Html.Raw(string.Join(", ", Model.SubjectLabels.Select(l => "'" + HttpUtility.JavaScriptStringEncode(l) + "'")))];
+        var subjectData = [@Html.Raw(string.Join(", ", Model.SubjectAverages))];
+
+        if (subjectLabels.length === 0) {
+            subjectLabels = ['No Subject Marks Recorded'];
+            subjectData = [0];
+        }
+
+        var subjectCtx = document.getElementById('subjectChart').getContext('2d');
+        new Chart(subjectCtx, {
+            type: 'bar',
+            data: {
+                labels: subjectLabels,
+                datasets: [{
+                    label: 'Class Average',
+                    data: subjectData,
+                    backgroundColor: '#8b5cf6',
+                    hoverBackgroundColor: '#7c3aed',
+                    borderRadius: 6,
+                    maxBarThickness: 50
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        enabled: true,
+                        callbacks: {
+                            label: function (context) {
+                                return ' Average: ' + context.parsed.y + ' marks';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 1,
+                            font: { family: 'Inter', size: 11 }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Average Marks',
+                            font: { family: 'Inter', size: 12, weight: '600' },
+                            color: '#64748b'
+                        },
+                        grid: {
+                            color: '#f1f5f9'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: { family: 'Inter', size: 11, weight: '500' }
+                        },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    });
+</script>

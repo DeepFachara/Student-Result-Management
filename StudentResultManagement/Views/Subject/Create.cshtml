@@ -1,0 +1,73 @@
+@model StudentResultManagement.Models.Subject
+
+@{
+    ViewBag.Title = "Add Subject";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="page-container">
+
+    <div class="page-header" style="max-width: 680px; margin: 0 auto 24px;">
+        <div class="page-title-wrap">
+            <h1>Add New Subject</h1>
+            <p class="page-subtitle">Define course name, maximum examination marks, and passing threshold.</p>
+        </div>
+
+        <a href="@Url.Action("Index", "Subject")" class="btn btn-outline">
+            <i class="fa-solid fa-arrow-left"></i> Back to List
+        </a>
+    </div>
+
+    <div class="form-card">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+            <div class="form-group">
+                <label class="form-label">Subject / Course Name</label>
+                @Html.TextBoxFor(m => m.SubjectName, new
+                {
+                    @class = "form-control",
+                    placeholder = "e.g. Data Structures & Algorithms",
+                    required = "required"
+                })
+                @Html.ValidationMessageFor(m => m.SubjectName, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Maximum Total Marks</label>
+                @Html.TextBoxFor(m => m.MaxMarks, new
+                {
+                    @class = "form-control",
+                    type = "number",
+                    min = "1",
+                    placeholder = "e.g. 100",
+                    required = "required"
+                })
+                @Html.ValidationMessageFor(m => m.MaxMarks, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Minimum Passing Marks</label>
+                @Html.TextBoxFor(m => m.PassingMarks, new
+                {
+                    @class = "form-control",
+                    type = "number",
+                    min = "0",
+                    placeholder = "e.g. 40",
+                    required = "required"
+                })
+                @Html.ValidationMessageFor(m => m.PassingMarks, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-actions">
+                <a href="@Url.Action("Index", "Subject")" class="btn btn-outline">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-check"></i> Save Subject
+                </button>
+            </div>
+        }
+    </div>
+
+</div>

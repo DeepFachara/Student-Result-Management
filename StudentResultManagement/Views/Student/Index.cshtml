@@ -1,0 +1,129 @@
+@model IEnumerable<StudentResultManagement.Models.Student>
+
+@{
+    ViewBag.Title = "Manage Students";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="page-container">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-title-wrap">
+            <h1>Manage Students</h1>
+            <p class="page-subtitle">Add, edit, search, and manage registered student records.</p>
+        </div>
+
+        <div class="page-actions">
+            <a href="@Url.Action("Create", "Student")" class="btn btn-primary">
+                <i class="fa-solid fa-user-plus"></i>
+                <span>Add New Student</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert Notifications -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>@TempData["Success"]</span>
+        </div>
+    }
+
+    <!-- Table Container -->
+    <div class="table-container">
+
+        <!-- Table Toolbar -->
+        <div class="table-toolbar">
+            <div style="font-weight:600; font-size:15px; color:var(--slate-800); display:flex; align-items:center; gap:8px;">
+                <i class="fa-solid fa-users" style="color:var(--primary);"></i>
+                <span>Enrolled Students</span>
+            </div>
+
+            <div style="font-size:13px; color:var(--slate-500); font-weight:500;">
+                Total Students: <strong style="color:var(--slate-800);">@(Model?.Count() ?? 0)</strong>
+            </div>
+        </div>
+
+        @if (Model == null || !Model.Any())
+        {
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fa-solid fa-user-graduate"></i>
+                </div>
+                <h3>No Students Enrolled</h3>
+                <p>No student records have been created yet. Click below to add your first student.</p>
+                <a href="@Url.Action("Create", "Student")" class="btn btn-primary">
+                    <i class="fa-solid fa-user-plus"></i> Add First Student
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="modern-table" id="studentsTable">
+                    <thead>
+                        <tr>
+                            <th>Enrollment No.</th>
+                            <th>Student Name</th>
+                            <th>Email Address</th>
+                            <th>Department</th>
+                            <th>Semester</th>
+                            <th style="text-align:right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var student in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="badge-enrollment">@student.EnrollmentNo</span>
+                                </td>
+                                <td>
+                                    <div class="student-col">
+                                        <div class="student-avatar">
+                                            @(string.IsNullOrWhiteSpace(student.Name) ? "S" : student.Name.Substring(0, 1).ToUpper())
+                                        </div>
+                                        <div class="student-details">
+                                            <span class="student-name">@student.Name</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span style="color:var(--slate-600);">@student.Email</span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-dept">
+                                        <i class="fa-solid fa-building-columns"></i> @student.Department
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-sem">
+                                        Sem @student.Semester
+                                    </span>
+                                </td>
+                                <td style="text-align:right;">
+                                    <div class="action-buttons" style="justify-content: flex-end;">
+                                        <a href="@Url.Action("Edit", "Student", new { id = student.StudentID })" 
+                                           class="btn btn-sm btn-edit" title="Edit Student">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                            <span>Edit</span>
+                                        </a>
+
+                                        <a href="@Url.Action("Delete", "Student", new { id = student.StudentID })" 
+                                           class="btn btn-sm btn-danger" title="Delete Student">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                            <span>Delete</span>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+</div>

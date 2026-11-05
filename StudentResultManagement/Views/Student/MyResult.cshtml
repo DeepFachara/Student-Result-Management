@@ -1,0 +1,152 @@
+@model IEnumerable<StudentResultManagement.Models.Result>
+
+@{
+    ViewBag.Title = "My Result";
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+}
+
+<div class="page-container">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-title-wrap">
+            <h1>Examination Result</h1>
+            <p class="page-subtitle">
+                Official statement of marks and evaluation status.
+            </p>
+        </div>
+        <div class="page-actions">
+            <a href="@Url.Action("Dashboard", "Student")" class="btn btn-outline">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Back to Dashboard</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Results Notice if Draft -->
+    @if (ViewBag.ResultsNotPublished == true)
+    {
+        <div class="alert alert-warning">
+            <i class="fa-solid fa-clock"></i>
+            <div>
+                <strong>Notice:</strong> Your examination results are currently under review by administration and have not yet been declared. Please check back later.
+            </div>
+        </div>
+    }
+    else if (Model != null && Model.Any())
+    {
+        <!-- Student Information Card -->
+        if (ViewBag.Student != null)
+        {
+            <div class="custom-card" style="margin-bottom: 24px; padding: 18px 24px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                    <div>
+                        <span style="display:block; font-size:11.5px; text-transform:uppercase; font-weight:600; color:var(--slate-500); letter-spacing:0.4px;">Student Name</span>
+                        <strong style="font-size:15px; color:var(--slate-900);">@ViewBag.Student.Name</strong>
+                    </div>
+                    <div>
+                        <span style="display:block; font-size:11.5px; text-transform:uppercase; font-weight:600; color:var(--slate-500); letter-spacing:0.4px;">Enrollment No</span>
+                        <strong style="font-size:15px; color:var(--slate-900);">@ViewBag.Student.EnrollmentNo</strong>
+                    </div>
+                    <div>
+                        <span style="display:block; font-size:11.5px; text-transform:uppercase; font-weight:600; color:var(--slate-500); letter-spacing:0.4px;">Department</span>
+                        <strong style="font-size:15px; color:var(--slate-900);">@ViewBag.Student.Department</strong>
+                    </div>
+                    <div>
+                        <span style="display:block; font-size:11.5px; text-transform:uppercase; font-weight:600; color:var(--slate-500); letter-spacing:0.4px;">Semester</span>
+                        <strong style="font-size:15px; color:var(--slate-900);">Semester @ViewBag.Student.Semester</strong>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Marks Table Card -->
+        <div class="custom-card" style="padding: 0; overflow: hidden; margin-bottom: 24px;">
+            <div class="table-responsive">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th style="text-align: center;">Maximum Marks</th>
+                            <th style="text-align: center;">Passing Marks</th>
+                            <th style="text-align: center;">Marks Obtained</th>
+                            <th style="text-align: center;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in Model)
+                        {
+                            bool passed = r.Marks >= r.PassingMarks;
+                            <tr>
+                                <td>
+                                    <strong style="color:var(--slate-900);">@r.SubjectName</strong>
+                                </td>
+                                <td style="text-align: center; color:var(--slate-600);">@r.MaxMarks</td>
+                                <td style="text-align: center; color:var(--slate-600);">@r.PassingMarks</td>
+                                <td style="text-align: center; font-size: 15px; font-weight: 700; color:var(--slate-900);">
+                                    @r.Marks
+                                </td>
+                                <td style="text-align: center;">
+                                    @if (passed)
+                                    {
+                                        <span class="status-pill active" style="background:#dcfce7; color:#15803d; border:1px solid #bbf7d0;">
+                                            <i class="fa-solid fa-check"></i> PASS
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-pill inactive" style="background:#fee2e2; color:#b91c1c; border:1px solid #fecaca;">
+                                            <i class="fa-solid fa-xmark"></i> FAIL
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Summary Strip Footer -->
+            <div style="background: var(--slate-50); border-top: 1px solid var(--slate-200); padding: 18px 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px;">
+                <div>
+                    <span style="display:block; font-size:11px; text-transform:uppercase; font-weight:600; color:var(--slate-500);">Total Marks</span>
+                    <strong style="font-size:17px; color:var(--slate-900);">@ViewBag.TotalMarks / @ViewBag.TotalMaximum</strong>
+                </div>
+                <div>
+                    <span style="display:block; font-size:11px; text-transform:uppercase; font-weight:600; color:var(--slate-500);">Percentage</span>
+                    <strong style="font-size:17px; color:var(--slate-900);">@String.Format("{0:0.00}%", ViewBag.Percentage)</strong>
+                </div>
+                <div>
+                    <span style="display:block; font-size:11px; text-transform:uppercase; font-weight:600; color:var(--slate-500);">Grade</span>
+                    <strong style="font-size:17px; color:var(--slate-900);">@ViewBag.Grade</strong>
+                </div>
+                <div>
+                    <span style="display:block; font-size:11px; text-transform:uppercase; font-weight:600; color:var(--slate-500);">Final Result</span>
+                    @if (ViewBag.ResultStatus == "PASS")
+                    {
+                        <strong style="font-size:17px; color:var(--success);">
+                            <i class="fa-solid fa-circle-check"></i> PASS
+                        </strong>
+                    }
+                    else
+                    {
+                        <strong style="font-size:17px; color:var(--danger);">
+                            <i class="fa-solid fa-triangle-exclamation"></i> FAIL
+                        </strong>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="custom-card empty-state" style="padding: 48px 24px; text-align: center;">
+            <div class="empty-icon" style="font-size: 38px; color: var(--slate-400); margin-bottom: 12px;">
+                <i class="fa-solid fa-file-circle-question"></i>
+            </div>
+            <h3 style="font-size: 18px; font-weight: 700; color: var(--slate-800); margin-bottom: 6px;">No Marks Recorded Yet</h3>
+            <p style="color: var(--slate-500); font-size: 14px; max-width: 440px; margin: 0 auto;">No examination evaluations have been entered for your enrollment yet. Please check back later.</p>
+        </div>
+    }
+
+</div>

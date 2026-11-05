@@ -1,0 +1,147 @@
+@model IEnumerable<StudentResultManagement.Models.Result>
+
+@{
+    ViewBag.Title = "Manage Results";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="page-container">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-title-wrap">
+            <h1>Manage Examination Results</h1>
+            <p class="page-subtitle">Record, update, and review student marks across all curriculum subjects.</p>
+        </div>
+
+        <div class="page-actions">
+            <a href="@Url.Action("StudentResult", "Result")" class="btn btn-outline">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <span>Student Result Card</span>
+            </a>
+            <a href="@Url.Action("Create", "Result")" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i>
+                <span>Enter New Marks</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert Notifications -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>@TempData["Success"]</span>
+        </div>
+    }
+
+    <!-- Table Container -->
+    <div class="table-container">
+
+        <!-- Table Toolbar -->
+        <div class="table-toolbar">
+            <div style="font-weight:600; font-size:15px; color:var(--slate-800); display:flex; align-items:center; gap:8px;">
+                <i class="fa-solid fa-list-check" style="color:var(--primary);"></i>
+                <span>Recorded Marks & Evaluations</span>
+            </div>
+
+            <div style="font-size:13px; color:var(--slate-500); font-weight:500;">
+                Total Evaluations: <strong style="color:var(--slate-800);">@(Model?.Count() ?? 0)</strong>
+            </div>
+        </div>
+
+        @if (Model == null || !Model.Any())
+        {
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fa-solid fa-file-invoice"></i>
+                </div>
+                <h3>No Results Recorded</h3>
+                <p>No student marks have been entered into the system yet.</p>
+                <a href="@Url.Action("Create", "Result")" class="btn btn-primary">
+                    <i class="fa-solid fa-plus"></i> Enter First Marks
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="modern-table" id="resultsTable">
+                    <thead>
+                        <tr>
+                            <th>Enrollment No.</th>
+                            <th>Student Name</th>
+                            <th>Subject</th>
+                            <th>Marks Scored</th>
+                            <th>Percentage</th>
+                            <th>Status</th>
+                            <th style="text-align:right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var result in Model)
+                        {
+                            bool isPass = result.Marks >= result.PassingMarks;
+                            double pct = result.MaxMarks > 0 ? ((double)result.Marks / result.MaxMarks * 100) : 0;
+                            <tr>
+                                <td>
+                                    <span class="badge-enrollment">@result.EnrollmentNo</span>
+                                </td>
+                                <td>
+                                    <div class="student-col">
+                                        <div class="student-avatar">
+                                            @(string.IsNullOrWhiteSpace(result.StudentName) ? "S" : result.StudentName.Substring(0, 1).ToUpper())
+                                        </div>
+                                        <div class="student-details">
+                                            <span class="student-name">@result.StudentName</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <strong>@result.SubjectName</strong>
+                                </td>
+                                <td>
+                                    <span style="font-size:15px; font-weight:700; color:var(--slate-900);">@result.Marks</span>
+                                    <span style="color:var(--slate-400);">/ @result.MaxMarks</span>
+                                </td>
+                                <td>
+                                    <span style="font-weight:600; color:var(--slate-700);">@Math.Round(pct, 1)%</span>
+                                </td>
+                                <td>
+                                    @if (isPass)
+                                    {
+                                        <span class="badge badge-pass">
+                                            <i class="fa-solid fa-circle-check"></i> PASS
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-fail">
+                                            <i class="fa-solid fa-circle-xmark"></i> FAIL
+                                        </span>
+                                    }
+                                </td>
+                                <td style="text-align:right;">
+                                    <div class="action-buttons" style="justify-content: flex-end;">
+                                        <a href="@Url.Action("Edit", "Result", new { id = result.ResultID })" 
+                                           class="btn btn-sm btn-edit" title="Edit Marks">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                            <span>Edit</span>
+                                        </a>
+
+                                        <a href="@Url.Action("Delete", "Result", new { id = result.ResultID })" 
+                                           class="btn btn-sm btn-danger" title="Delete Entry">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                            <span>Delete</span>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+</div>

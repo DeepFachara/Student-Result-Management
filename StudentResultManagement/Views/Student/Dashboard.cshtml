@@ -1,0 +1,139 @@
+@model StudentResultManagement.Models.Student
+
+@{
+    ViewBag.Title = "Student Dashboard";
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+}
+
+<div class="page-container">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-title-wrap">
+            <h1>Welcome, @Model.Name</h1>
+            <p class="page-subtitle">
+                Enrollment No: <strong>@Model.EnrollmentNo</strong> &bull; Department of <strong>@Model.Department</strong> &bull; Semester <strong>@Model.Semester</strong>
+            </p>
+        </div>
+        <div class="page-actions">
+            <a href="@Url.Action("MyResult", "Student")" class="btn btn-primary">
+                <i class="fa-solid fa-file-invoice"></i>
+                <span>View Result</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Notice if Results are in Draft -->
+    @if (ViewBag.IsResultPublished == false)
+    {
+        <div class="alert alert-warning">
+            <i class="fa-solid fa-clock"></i>
+            <div>
+                <strong>Results Notice:</strong> Examination results for your semester are currently under review by administration and have not yet been declared.
+            </div>
+        </div>
+    }
+    else if (ViewBag.HasResults == true)
+    {
+        <!-- 4 Key Stat Cards -->
+        <div class="stats-grid">
+            <!-- Result Status -->
+            <div class="stat-card">
+                <div class="stat-info">
+                    <span class="stat-label">Result Status</span>
+                    @if (ViewBag.ResultStatus == "PASS")
+                    {
+                        <span class="stat-value" style="color: var(--success);">PASS</span>
+                        <span class="stat-subtext">
+                            <i class="fa-solid fa-check-circle" style="color: var(--success);"></i> All subjects cleared
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="stat-value" style="color: var(--danger);">FAIL</span>
+                        <span class="stat-subtext">
+                            <i class="fa-solid fa-circle-exclamation" style="color: var(--danger);"></i> @ViewBag.Backlogs subject backlog(s)
+                        </span>
+                    }
+                </div>
+                <div class="stat-icon @(ViewBag.ResultStatus == "PASS" ? "green" : "red")">
+                    <i class="fa-solid @(ViewBag.ResultStatus == "PASS" ? "fa-circle-check" : "fa-triangle-exclamation")"></i>
+                </div>
+            </div>
+
+            <!-- Percentage -->
+            <div class="stat-card">
+                <div class="stat-info">
+                    <span class="stat-label">Percentage</span>
+                    <span class="stat-value">@ViewBag.Percentage%</span>
+                    <span class="stat-subtext">Overall Grade: <strong>@ViewBag.Grade</strong></span>
+                </div>
+                <div class="stat-icon blue">
+                    <i class="fa-solid fa-percent"></i>
+                </div>
+            </div>
+
+            <!-- CGPA -->
+            <div class="stat-card">
+                <div class="stat-info">
+                    <span class="stat-label">Cumulative GPA</span>
+                    <span class="stat-value">@ViewBag.CGPA</span>
+                    <span class="stat-subtext">Graded on 10.0 scale</span>
+                </div>
+                <div class="stat-icon purple">
+                    <i class="fa-solid fa-award"></i>
+                </div>
+            </div>
+
+            <!-- Total Marks -->
+            <div class="stat-card">
+                <div class="stat-info">
+                    <span class="stat-label">Total Marks</span>
+                    <span class="stat-value">@ViewBag.TotalMarks <span style="font-size:14px; font-weight:500; color:var(--slate-500);">/ @ViewBag.TotalMaximum</span></span>
+                    <span class="stat-subtext">Across @ViewBag.TotalSubjects curriculum subjects</span>
+                </div>
+                <div class="stat-icon amber">
+                    <i class="fa-solid fa-file-lines"></i>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Quick Navigation Panels Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+        <!-- Card 1: Result Details -->
+        <div class="custom-card" style="display:flex; align-items:flex-start; gap:18px; padding:24px;">
+            <div class="stat-icon blue" style="width:48px; height:48px; font-size:20px; flex-shrink:0;">
+                <i class="fa-solid fa-file-invoice"></i>
+            </div>
+            <div>
+                <h3 style="font-size:17px; font-weight:700; color:var(--slate-900); margin:0 0 6px;">Examination Result</h3>
+                <p style="font-size:13.5px; color:var(--slate-500); margin:0 0 14px; line-height:1.5;">
+                    View your subject-wise marks, passing thresholds, individual subject statuses, and overall semester grades.
+                </p>
+                <a href="@Url.Action("MyResult", "Student")" class="btn btn-sm btn-primary">
+                    <span>View Result</span>
+                    <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Card 2: Student Profile -->
+        <div class="custom-card" style="display:flex; align-items:flex-start; gap:18px; padding:24px;">
+            <div class="stat-icon purple" style="width:48px; height:48px; font-size:20px; flex-shrink:0;">
+                <i class="fa-solid fa-user-graduate"></i>
+            </div>
+            <div>
+                <h3 style="font-size:17px; font-weight:700; color:var(--slate-900); margin:0 0 6px;">Student Profile</h3>
+                <p style="font-size:13.5px; color:var(--slate-500); margin:0 0 14px; line-height:1.5;">
+                    View your registered academic profile information including enrollment number, department, and contact email.
+                </p>
+                <a href="@Url.Action("Profile", "Student")" class="btn btn-sm btn-outline">
+                    <span>View Profile</span>
+                    <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>

@@ -1,0 +1,176 @@
+@model IEnumerable<StudentResultManagement.Models.Result>
+
+@{
+    ViewBag.Title = "Student Result Card";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="page-container">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-title-wrap">
+            <h1>Student Examination Result</h1>
+            <p class="page-subtitle">View consolidated semester performance and grade calculations for any student.</p>
+        </div>
+
+        <div class="page-actions">
+            <a href="@Url.Action("Index", "Result")" class="btn btn-outline">
+                <i class="fa-solid fa-arrow-left"></i> Back to All Results
+            </a>
+        </div>
+    </div>
+
+    <!-- Student Selection Card -->
+    <div class="card" style="margin-bottom:24px;">
+        <h3 style="font-size:16px; font-weight:700; color:var(--slate-900); margin-bottom:6px;">Select Student to View Results</h3>
+        <p style="font-size:13px; color:var(--slate-500); margin-bottom:14px;">Choose an enrolled student from the dropdown list below.</p>
+
+        @using (Html.BeginForm("StudentResult", "Result", FormMethod.Get))
+        {
+            <div class="student-select-form">
+                <div class="student-select-field">
+                    @Html.DropDownList(
+                        "studentId",
+                        (SelectList)ViewBag.Students,
+                        "-- Select a Registered Student --",
+                        new { @class = "form-control" })
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-magnifying-glass"></i> View Result
+                </button>
+            </div>
+        }
+    </div>
+
+    @if (ViewBag.Student != null)
+    {
+        <!-- Student Info & Marksheet Card -->
+        <div class="card" id="printableMarksheet">
+            <div class="result-student-header">
+                <div style="display:flex; align-items:center; gap:14px;">
+                    <div class="avatar-circle" style="width:48px; height:48px; font-size:18px;">
+                        @(string.IsNullOrWhiteSpace(ViewBag.Student.Name) ? "S" : ((string)ViewBag.Student.Name).Substring(0, 1).ToUpper())
+                    </div>
+                    <div>
+                        <h2>@ViewBag.Student.Name</h2>
+                        <p style="font-size:13px; color:var(--slate-500); margin-top:2px;">
+                            Enrollment No: <span class="badge-enrollment">@ViewBag.Student.EnrollmentNo</span> &bull; Email: @ViewBag.Student.Email
+                        </p>
+                    </div>
+                </div>
+
+                <div class="student-header-right">
+                    <span class="badge badge-dept" style="font-size:13px; padding:6px 12px;">
+                        <i class="fa-solid fa-building-columns"></i> @ViewBag.Student.Department
+                    </span>
+                    <span class="badge badge-sem" style="font-size:13px; padding:6px 12px;">
+                        Semester @ViewBag.Student.Semester
+                    </span>
+                </div>
+            </div>
+
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Subject Title</th>
+                                <th>Marks Scored</th>
+                                <th>Maximum Marks</th>
+                                <th>Passing Marks</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var result in Model)
+                            {
+                                bool isPass = result.Marks >= result.PassingMarks;
+                                <tr>
+                                    <td>
+                                        <strong style="color:var(--slate-900);">@result.SubjectName</strong>
+                                    </td>
+                                    <td>
+                                        <span style="font-size:15px; font-weight:700;">@result.Marks</span>
+                                    </td>
+                                    <td>@result.MaxMarks</td>
+                                    <td>@result.PassingMarks</td>
+                                    <td>
+                                        @if (isPass)
+                                        {
+                                            <span class="badge badge-pass">
+                                                <i class="fa-solid fa-circle-check"></i> PASS
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-fail">
+                                                <i class="fa-solid fa-circle-xmark"></i> FAIL
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Result Summary Metrics Box -->
+                <div class="result-summary-box">
+                    <div class="summary-item">
+                        <div class="label">Aggregate Marks</div>
+                        <div class="val">@ViewBag.TotalMarks <span style="font-size:14px; color:var(--slate-500); font-weight:400;">/ @ViewBag.TotalMaximum</span></div>
+                    </div>
+
+                    <div class="summary-item">
+                        <div class="label">Percentage</div>
+                        <div class="val">@String.Format("{0:0.00}%", ViewBag.Percentage)</div>
+                    </div>
+
+                    <div class="summary-item">
+                        <div class="label">CGPA (10.0)</div>
+                        <div class="val" style="color:var(--primary);">@String.Format("{0:0.00}", ViewBag.CGPA)</div>
+                    </div>
+
+                    <div class="summary-item">
+                        <div class="label">Letter Grade</div>
+                        <div class="val" style="color:var(--slate-800);">@ViewBag.Grade</div>
+                    </div>
+
+                    <div class="summary-item">
+                        <div class="label">Backlogs</div>
+                        <div>
+                            @if (ViewBag.Backlogs == 0)
+                            {
+                                <span class="badge badge-pass" style="font-size:13px; padding:4px 12px;">
+                                    <i class="fa-solid fa-circle-check"></i> 0 (None)
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-fail" style="font-size:13px; padding:4px 12px;">
+                                    <i class="fa-solid fa-circle-xmark"></i> @ViewBag.Backlogs Subject@(ViewBag.Backlogs > 1 ? "s" : "")
+                                </span>
+                            }
+                        </div>
+                    </div>
+
+                </div>
+            }
+            else
+            {
+                <div class="empty-state" style="padding:32px 16px;">
+                    <div class="empty-state-icon">
+                        <i class="fa-solid fa-file-circle-exclamation"></i>
+                    </div>
+                    <h3>No Marks Recorded for This Student</h3>
+                    <p>No evaluation marks have been entered for @ViewBag.Student.Name yet.</p>
+                    <a href="@Url.Action("Create", "Result")" class="btn btn-primary">+ Enter Marks Now</a>
+                </div>
+            }
+        </div>
+    }
+
+</div>
